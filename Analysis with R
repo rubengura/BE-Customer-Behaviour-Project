@@ -1,0 +1,46 @@
+### Charge the libraries used to do some wrangling, manipulation and prediction
+
+library(dplyr)
+library(tidyr)
+library(caret)
+
+### Importing and checking data
+
+blackwell <- read.csv("Demographic_Data.csv", header = TRUE, sep = ",")
+
+str(blackwell)
+
+### As "in.store" and "region" variables are not integer but factor, we must convert them
+
+blackwell$in.store <- factor(blackwell$in.store, levels = c(0, 1), 
+                             labels = c("Online", "In store"))
+blackwell$region   <- factor(blackwell$region, levels = c(1:4),
+                             labels = c("East", "West", "South", "Central"))
+
+### Exploratory Analisys and Data Visualization
+
+summary(blackwell)
+
+amount_region <- ggplot(blackwell, aes(region, amount)) + geom_boxplot(fill = "orange")
+amount_region
+
+age_amount <- ggplot(blackwell, aes(amount, age)) + geom_point() + facet_wrap(~region)
+
+
+### Filtering different transactions types 
+
+blackwell.online  <- filter(blackwell, blackwell$in.store == "0")
+blackwell.instore <- filter(blackwell, blackwell$in.store == "1")
+
+### Filtering different regions
+
+blackwell.east    <- filter(blackwell, blackwell$region   == "1")
+blackwell.west    <- filter(blackwell, blackwell$region   == "2")
+blackwell.south   <- filter(blackwell, blackwell$region   == "3")
+blackwell.central <- filter(blackwell, blackwell$region   == "4")
+
+### Visualizing data by region
+
+
+
+ggplot(blackwell, aes(blackwell$amount)) + geom_density(aes(blackwell$age))
