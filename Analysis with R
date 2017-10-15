@@ -1,5 +1,6 @@
-### Charge the libraries used to do some wrangling, manipulation and prediction
+### Charge the libraries used to do Exploratory Data Analysis (EDA), some wrangling, manipulation and prediction
 
+library(corrplot)
 library(dplyr)
 library(tidyr)
 library(caret)
@@ -10,6 +11,13 @@ blackwell <- read.csv("Demographic_Data.csv", header = TRUE, sep = ",")
 
 str(blackwell)
 
+#'data.frame':	80000 obs. of  5 variables:
+# $ in.store: int  0 0 1 1 1 0 0 1 1 1 ...
+# $ age     : int  37 35 45 46 33 24 43 66 51 47 ...
+# $ items   : int  4 2 3 3 4 3 6 5 5 3 ...
+# $ amount  : num  281 220 1526 715 1938 ...
+# $ region  : int  2 2 4 3 1 4 2 3 1 1 ...
+
 ### As "in.store" and "region" variables are not integer but factor, we must convert them
 
 blackwell$in.store <- factor(blackwell$in.store, levels = c(0, 1), 
@@ -17,9 +25,25 @@ blackwell$in.store <- factor(blackwell$in.store, levels = c(0, 1),
 blackwell$region   <- factor(blackwell$region, levels = c(1:4),
                              labels = c("East", "West", "South", "Central"))
 
-### Exploratory Analisys and Data Visualization
+### EDA & Visualization
 
 summary(blackwell)
+
+# in.store          age            items           amount             region     
+# Online  :40000   Min.   :18.00   Min.   :1.000   Min.   :   5.005   East   :16000  
+# In store:40000   1st Qu.:33.00   1st Qu.:3.000   1st Qu.: 285.140   West   :20000  
+#                  Median :45.00   Median :4.000   Median : 582.315   South  :18000  
+#                  Mean   :45.76   Mean   :4.505   Mean   : 835.920   Central:26000  
+#                  3rd Qu.:56.00   3rd Qu.:6.000   3rd Qu.:1233.700                  
+#                  Max.   :85.00   Max.   :8.000   Max.   :3000.000                  
+
+cor(blackwell[ , c(2,3,4))
+
+#                 age        items        amount
+#age     1.0000000000 0.0006785133 -0.2820891185
+#items   0.0006785133 1.0000000000  0.0003670029
+#amount -0.2820891185 0.0003670029  1.0000000000
+
 
 amount_region <- ggplot(blackwell, aes(region, amount)) + geom_boxplot(fill = "orange")
 amount_region
@@ -29,15 +53,15 @@ age_amount <- ggplot(blackwell, aes(amount, age)) + geom_point() + facet_wrap(~r
 
 ### Filtering different transactions types 
 
-blackwell.online  <- filter(blackwell, blackwell$in.store == "0")
-blackwell.instore <- filter(blackwell, blackwell$in.store == "1")
+blackwell.online  <- filter(blackwell, blackwell$in.store == "Online")
+blackwell.instore <- filter(blackwell, blackwell$in.store == "In store")
 
 ### Filtering different regions
 
-blackwell.east    <- filter(blackwell, blackwell$region   == "1")
-blackwell.west    <- filter(blackwell, blackwell$region   == "2")
-blackwell.south   <- filter(blackwell, blackwell$region   == "3")
-blackwell.central <- filter(blackwell, blackwell$region   == "4")
+blackwell.east    <- filter(blackwell, blackwell$region   == "East")
+blackwell.west    <- filter(blackwell, blackwell$region   == "West")
+blackwell.south   <- filter(blackwell, blackwell$region   == "South")
+blackwell.central <- filter(blackwell, blackwell$region   == "Central")
 
 ### Visualizing data by region
 
