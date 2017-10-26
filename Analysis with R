@@ -1,9 +1,9 @@
 ### Charge the libraries used to do Exploratory Data Analysis (EDA), some wrangling, manipulation and prediction
 
-library(corrplot)
 library(dplyr)
 library(tidyr)
 library(caret)
+library(ggplot2)
 
 ### Importing and checking data
 
@@ -25,7 +25,7 @@ blackwell$in.store <- factor(blackwell$in.store, levels = c(0, 1),
 blackwell$region   <- factor(blackwell$region, levels = c(1:4),
                              labels = c("East", "West", "South", "Central"))
 
-### EDA & Visualization
+### EDA
 
 summary(blackwell)
 
@@ -45,10 +45,18 @@ cor(blackwell[ , c(2,3,4))
 #amount -0.2820891185 0.0003670029  1.0000000000
 
 
-amount_region <- ggplot(blackwell, aes(region, amount)) + geom_boxplot(fill = "orange")
+# Visualization
+
+amount_region <- ggplot(blackwell, aes(region, amount, fill = region)) + geom_boxplot() + 
+  ggtitle("Boxplot amount by region") + theme(plot.title = element_text(size = 11))
 amount_region
 
 age_amount <- ggplot(blackwell, aes(amount, age)) + geom_point() + facet_wrap(~region)
+
+age_region <- ggplot(blackwell, aes(region, age, fill = region)) + geom_boxplot() + 
+  ggtitle("Boxplot age by region") + theme(plot.title = element_text(size = 11))
+
+age_region
 
 
 ### Filtering different transactions types 
