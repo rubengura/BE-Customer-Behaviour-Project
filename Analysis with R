@@ -37,6 +37,9 @@ summary(blackwell)
 #                  3rd Qu.:56.00   3rd Qu.:6.000   3rd Qu.:1233.700                  
 #                  Max.   :85.00   Max.   :8.000   Max.   :3000.000                  
 
+count_table <- blackwell %>% group_by(in.store, region) %>% summarise(count = n())
+View(count_table)
+
 cor(blackwell[ , c(2,3,4))
 
 #                 age        items        amount
@@ -45,34 +48,62 @@ cor(blackwell[ , c(2,3,4))
 #amount -0.2820891185 0.0003670029  1.0000000000
 
 
-# Visualization
+#### Data Visualization 
 
-amount_region <- ggplot(blackwell, aes(region, amount, fill = region)) + geom_boxplot() + 
-  ggtitle("Boxplot amount by region") + theme(plot.title = element_text(size = 11))
-amount_region
+amount_hist <- ggplot(blackwell, aes(amount)) + 
+  geom_histogram() + 
+  aes(fill = in.store) + 
+  facet_wrap(~in.store) +
+  theme(legend.position = "none") +
+  ggtitle("Histogram of amount by purchase channel") +
+  theme(plot.title = element_text(size = 11))
+amount_hist
 
-age_amount <- ggplot(blackwell, aes(amount, age)) + geom_point() + facet_wrap(~region)
+amount_hist_region <- ggplot(blackwell, aes(amount)) + 
+  geom_histogram() + 
+  aes(fill = in.store) + 
+  facet_wrap(region ~ in.store, ncol = 2) +
+  theme(legend.position = "none") +
+  ggtitle("Histogram of amount by purchase channel by region") +
+  theme(plot.title = element_text(size = 11))
+amount_hist_region
 
-age_region <- ggplot(blackwell, aes(region, age, fill = region)) + geom_boxplot() + 
-  ggtitle("Boxplot age by region") + theme(plot.title = element_text(size = 11))
+items_hist <- ggplot(blackwell, aes(items)) + 
+  geom_histogram(bins = 8) + 
+  aes(fill = in.store) + 
+  facet_wrap(~in.store) +
+  theme(legend.position = "none") +
+  ggtitle("Histogram of items purchased by channel") +
+  theme(plot.title = element_text(size = 11))
+items_hist
 
-age_region
+items_hist_region <- ggplot(blackwell, aes(items)) + 
+  geom_histogram(bins = 8) + 
+  aes(fill = in.store) + 
+  facet_wrap(region ~ in.store, ncol = 2) +
+  theme(legend.position = "none") +
+  ggtitle("Histogram of items purchased by channel and by region") +
+  theme(plot.title = element_text(size = 11))
+items_hist_region
 
+### Modelling
 
-### Filtering different transactions types 
+set.seed(123)
+indices <- createDataPartition(blackwell$region, p = 0.75, list = F)
+train <- blackwell[indices,]
+test  <- blackwell[-indices,]
 
-blackwell.online  <- filter(blackwell, blackwell$in.store == "Online")
-blackwell.instore <- filter(blackwell, blackwell$in.store == "In store")
+## k-NN
+knn_model <- train(amount ~ ., data = train, method = "knn")
+knn_model
 
-### Filtering different regions
+knn_predict <- predict(knn_model, newdata = test)
+postResample(knn_predict, test$amount)
 
-blackwell.east    <- filter(blackwell, blackwell$region   == "East")
-blackwell.west    <- filter(blackwell, blackwell$region   == "West")
-blackwell.south   <- filter(blackwell, blackwell$region   == "South")
-blackwell.central <- filter(blackwell, blackwell$region   == "Central")
+## RandomForest
 
-### Visualizing data by region
+rf_model <- train(amount ~ ., data = train, method = "rf", importance = TRUE)
+rf_model
 
-
-
-ggplot(blackwell, aes(blackwell$amount)) + geom_density(aes(blackwell$age))
+rf_predict <- predict(rf_model, newdata = test)
+postResample(rf_predict, test$amount)
